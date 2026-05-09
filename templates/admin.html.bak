@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>شات الحكومة | لوحة التحكم</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: #0a0a12;
+            color: #fff;
+            padding: 20px;
+        }
+
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #7eb311;
+        }
+
+        .admin-header h1 {
+            font-size: 1.8rem;
+            color: #7eb311;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #1a1a2e;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(126, 179, 17, 0.3);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            color: #7eb311;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: #1a1a2e;
+            padding: 10px;
+            border-radius: 20px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 15px;
+            transition: 0.2s;
+        }
+
+        .tab-btn.active {
+            background: #7eb311;
+            color: #fff;
+        }
+
+        .tab-content {
+            display: none;
+            background: #1a1a2e;
+            border-radius: 20px;
+            padding: 20px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        th {
+            color: #7eb311;
+        }
+
+        input, select, textarea {
+            background: #2a2a3e;
+            border: none;
+            padding: 10px;
+            border-radius: 10px;
+            color: #fff;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background: #7eb311;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            color: #fff;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button.danger {
+            background: #dc2626;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box input {
+            flex: 1;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            th, td {
+                font-size: 12px;
+                padding: 8px;
+            }
+            .tab-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="admin-container">
+    <div class="admin-header">
+        <h1>👑 لوحة تحكم المالك - شات الحكومة</h1>
+        <button onclick="logout()" class="danger">🚪 خروج</button>
+    </div>
+
+    <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><h3 id="totalUsers">0</h3><p>إجمالي المستخدمين</p></div>
+        <div class="stat-card"><h3 id="onlineUsers">0</h3><p>متصلون الآن</p></div>
+        <div class="stat-card"><h3 id="totalMessages">0</h3><p>إجمالي الرسائل</p></div>
+        <div class="stat-card"><h3 id="totalGold">0</h3><p>إجمالي الذهب</p></div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="users">👥 المستخدمين</button>
+        <button class="tab-btn" data-tab="roles">🎖️ الرتب والصلاحيات</button>
+        <button class="tab-btn" data-tab="rooms">🏠 الغرف</button>
+        <button class="tab-btn" data-tab="reports">📢 التقارير</button>
+        <button class="tab-btn" data-tab="punishments">🔨 العقوبات</button>
+        <button class="tab-btn" data-tab="gifts">🎁 الهدايا</button>
+        <button class="tab-btn" data-tab="contests">❓ المسابقات</button>
+        <button class="tab-btn" data-tab="announcements">📢 الإعلانات</button>
+        <button class="tab-btn" data-tab="settings">⚙️ الإعدادات</button>
+        <button class="tab-btn" data-tab="backup">💾 النسخ الاحتياطي</button>
+    </div>
+
+    <!-- تبويب المستخدمين -->
+    <div id="usersTab" class="tab-content active">
+        <div class="search-box">
+            <input type="text" id="searchUser" placeholder="🔍 بحث باسم المستخدم أو البريد...">
+            <button onclick="searchUsers()">بحث</button>
+        </div>
+        <div style="overflow-x: auto;">
+            <table id="usersTable">
+                <thead><tr><th>المعرف</th><th>اسم المستخدم</th><th>الرتبة</th><th>الذهب</th><th>الجواهر</th><th>الرسائل</th><th>الإجراءات</th></tr></thead>
+                <tbody id="usersList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- تبويب الرتب والصلاحيات -->
+    <div id="rolesTab" class="tab-content">
+        <button onclick="showAddRoleModal()">➕ إضافة رتبة جديدة</button>
+        <div style="overflow-x: auto; margin-top: 20px;">
+            <table>
+                <thead><tr><th>الرتبة</th><th>المستوى</th><th>كتم</th><th>طرد</th><th>حظر</th><th>حذف للجميع</th><th>إدارة المستخدمين</th><th>الإجراءات</th></tr></thead>
+                <tbody id="rolesList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- تبويب الغرف -->
+    <div id="roomsTab" class="tab-content">
+        <button onclick="showCreateRoomModal()">➕ إنشاء غرفة جديدة</button>
+        <div style="overflow-x: auto; margin-top: 20px;">
+            <table>
+                <thead><tr><th>الاسم</th><th>الاسم المعروض</th><th>النوع</th><th>عدد المتواجدين</th><th>الإجراءات</th></tr></thead>
+                <tbody id="roomsList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- تبويب التقارير -->
+    <div id="reportsTab" class="tab-content">
+        <div id="reportsList">جاري التحميل...</div>
+    </div>
+
+    <!-- تبويب العقوبات -->
+    <div id="punishmentsTab" class="tab-content">
+        <div id="punishmentsList">جاري التحميل...</div>
+    </div>
+
+    <!-- تبويب الهدايا -->
+    <div id="giftsTab" class="tab-content">
+        <button onclick="showAddGiftModal()">➕ إضافة هدية جديدة</button>
+        <div id="giftsList" style="margin-top: 20px;"></div>
+    </div>
+
+    <!-- تبويب المسابقات -->
+    <div id="contestsTab" class="tab-content">
+        <button onclick="showAddContestModal()">➕ إضافة سؤال مسابقة</button>
+        <div id="contestsList" style="margin-top: 20px;"></div>
+    </div>
+
+    <!-- تبويب الإعلانات -->
+    <div id="announcementsTab" class="tab-content">
+        <button onclick="showAddAnnouncementModal()">➕ إعلان جديد</button>
+        <div id="announcementsList" style="margin-top: 20px;"></div>
+    </div>
+
+    <!-- تبويب الإعدادات -->
+    <div id="settingsTab" class="tab-content">
+        <div class="settings-section">
+            <h3>⚙️ إعدادات عامة</h3>
+            <label>🔒 تفعيل/تعطيل الخاص</label>
+            <select id="settingPrivateEnabled" onchange="saveSetting('private_enabled', this.value)"><option value="1">مفعل</option><option value="0">معطل</option></select>
+            <label>🔢 الحد الأدنى لرتبة الخاص</label>
+            <input type="number" id="settingMinPrivateRank" onchange="saveSetting('min_private_rank', this.value)">
+            <label>💱 نسبة تحويل الذهب إلى جواهر</label>
+            <input type="number" id="settingGoldToGems" onchange="saveSetting('gold_to_gems', this.value)">
+            <label>▶️ تشغيل/إيقاف يوتيوب</label>
+            <select id="settingYoutubeEnabled" onchange="saveSetting('youtube_enabled', this.value)"><option value="1">مفعل</option><option value="0">معطل</option></select>
+        </div>
+    </div>
+
+    <!-- تبويب النسخ الاحتياطي -->
+    <div id="backupTab" class="tab-content">
+        <button onclick="createBackup()">💾 إنشاء نسخة احتياطية الآن</button>
+        <div id="backupList" style="margin-top: 20px;"></div>
+    </div>
+</div>
+
+<!-- نافذة تعديل المستخدم -->
+<div id="editUserModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; z-index: 1000;">
+    <div style="background: #1a1a2e; border-radius: 20px; padding: 20px; width: 90%; max-width: 400px;">
+        <h3>✏️ تعديل المستخدم</h3>
+        <input type="text" id="editUserId" style="display: none;">
+        <label>الرتبة</label>
+        <select id="editUserRole"></select>
+        <label>إضافة ذهب</label>
+        <input type="number" id="editUserGold" placeholder="كمية الذهب">
+        <label>إضافة جواهر</label>
+        <input type="number" id="editUserGems" placeholder="كمية الجواهر">
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button onclick="updateUser()">💾 حفظ</button>
+            <button onclick="banUser()" class="danger">🔨 حظر</button>
+            <button onclick="muteUser()" class="danger">🔇 كتم</button>
+            <button onclick="closeModal('editUserModal')">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ========== المتغيرات ==========
+    let currentUserRole = null;
+    
+    // ========== التحقق من صلاحيات المالك ==========
+    async function checkAdminAccess() {
+        const response = await fetch('/admin/api/check');
+        if (response.status === 403) {
+            window.location.href = '/';
+        }
+    }
+    
+    // ========== تحميل الإحصائيات ==========
+    async function loadStats() {
+        const response = await fetch('/admin/api/stats');
+        const data = await response.json();
+        document.getElementById('totalUsers').innerText = data.total_users || 0;
+        document.getElementById('onlineUsers').innerText = data.online_now || 0;
+        document.getElementById('totalMessages').innerText = data.total_messages || 0;
+        document.getElementById('totalGold').innerText = data.total_gold || 0;
+    }
+    
+    // ========== تحميل المستخدمين ==========
+    async function loadUsers() {
+        const response = await fetch('/admin/api/users');
+        const users = await response.json();
+        const tbody = document.getElementById('usersList');
+        tbody.innerHTML = users.map(user => `
+            <tr>
+                <td>${user.id}</td>
+                <td>${escapeHtml(user.username)}</td>
+                <td>${user.role}</td>
+                <td>${user.gold}</td>
+                <td>${user.gems}</td>
+                <td>${user.messages_count}</td>
+                <td><button onclick="openEditUser(${user.id}, '${user.username}', '${user.role}', ${user.gold}, ${user.gems})">✏️ تعديل</button></td>
+            </tr>
+        `).join('');
+    }
+    
+    // ========== تحميل الرتب ==========
+    async function loadRoles() {
+        const response = await fetch('/admin/api/roles');
+        const roles = await response.json();
+        const tbody = document.getElementById('rolesList');
+        tbody.innerHTML = roles.map(role => `
+            <tr>
+                <td>${role.name}</td>
+                <td>${role.rank_level}</td>
+                <td>${role.can_mute ? '✅' : '❌'}</td>
+                <td>${role.can_kick ? '✅' : '❌'}</td>
+                <td>${role.can_ban ? '✅' : '❌'}</td>
+                <td>${role.can_delete_for_all ? '✅' : '❌'}</td>
+                <td>${role.can_manage_users ? '✅' : '❌'}</td>
+                <td><button onclick="editRole('${role.name}')">✏️</button></td>
+            </tr>
+        `).join('');
+    }
+    
+    // ========== تحميل الغرف ==========
+    async function loadRooms() {
+        const response = await fetch('/admin/api/rooms');
+        const rooms = await response.json();
+        const tbody = document.getElementById('roomsList');
+        tbody.innerHTML = rooms.map(room => `
+            <tr>
+                <td>${room.name}</td>
+                <td>${room.display_name}</td>
+                <td>${room.type}</td>
+                <td>${room.users_count || 0}</td>
+                <td><button onclick="deleteRoom(${room.id})" class="danger">🗑️ حذف</button></td>
+            </tr>
+        `).join('');
+    }
+    
+    // ========== تحميل التقارير ==========
+    async function loadReports() {
+        const response = await fetch('/admin/api/reports');
+        const reports = await response.json();
+        const container = document.getElementById('reportsList');
+        container.innerHTML = reports.map(r => `
+            <div style="border-bottom: 1px solid #333; padding: 10px;">
+                <strong>${escapeHtml(r.reporter_username)}</strong> أبلغ عن <strong>${escapeHtml(r.reported_username)}</strong><br>
+                السبب: ${escapeHtml(r.reason)}<br>
+                <button onclick="resolveReport(${r.id}, 'accepted')">✅ قبول</button>
+                <button onclick="resolveReport(${r.id}, 'rejected')">❌ رفض</button>
+            </div>
+        `).join('');
+    }
+    
+    // ========== تحميل الهدايا ==========
+    async function loadGifts() {
+        const response = await fetch('/admin/api/gifts');
+        const gifts = await response.json();
+        const container = document.getElementById('giftsList');
+        container.innerHTML = gifts.map(g => `
+            <div style="border-bottom: 1px solid #333; padding: 10px; display: flex; justify-content: space-between;">
+                <span>${g.icon} ${g.name} - ${g.price_gold}🪙 / ${g.price_gems}💎</span>
+                <button onclick="deleteGift(${g.id})" class="danger">🗑️</button>
+            </div>
+        `).join('');
+    }
+    
+    // ========== تحميل المسابقات ==========
+    async function loadContests() {
+        const response = await fetch('/admin/api/contests');
+        const contests = await response.json();
+        const container = document.getElementById('contestsList');
+        container.innerHTML = contests.map(c => `
+            <div style="border-bottom: 1px solid #333; padding: 10px;">
+                <strong>سؤال:</strong> ${escapeHtml(c.question)}<br>
+                <strong>الإجابة:</strong> ${c.answer}<br>
+                <strong>المكافأة:</strong> ${c.reward_gold} ذهب<br>
+                <button onclick="deleteContest(${c.id})" class="danger">🗑️</button>
+            </div>
+        `).join('');
+    }
+    
+    // ========== إضافة هدية ==========
+    function showAddGiftModal() {
+        const name = prompt('أدخل اسم الهدية:');
+        const icon = prompt('أدخل رمز الهدية (مثل 🎁):');
+        const priceGold = prompt('سعر الهدية بالذهب:');
+        const priceGems = prompt('سعر الهدية بالجواهر:');
+        if (name && icon) {
+            fetch('/admin/api/gifts/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, icon, price_gold: parseInt(priceGold) || 0, price_gems: parseInt(priceGems) || 0 })
+            }).then(() => loadGifts());
+        }
+    }
+    
+    // ========== إضافة سؤال مسابقة ==========
+    function showAddContestModal() {
+        const question = prompt('أدخل سؤال المسابقة:');
+        const answer = prompt('أدخل الإجابة الصحيحة:');
+        const hint = prompt('أدخل تلميح (اختياري):');
+        const rewardGold = prompt('مكافأة الذهب:');
+        if (question && answer) {
+            fetch('/admin/api/contests/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question, answer, hint, reward_gold: parseInt(rewardGold) || 100 })
+            }).then(() => loadContests());
+        }
+    }
+    
+    // ========== إضافة إعلان ==========
+    function showAddAnnouncementModal() {
+        const title = prompt('عنوان الإعلان:');
+        const content = prompt('محتوى الإعلان:');
+        if (title && content) {
+            fetch('/admin/api/announcements/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, content })
+            }).then(() => loadAnnouncements());
+        }
+    }
+    
+    // ========== تحميل الإعلانات ==========
+    async function loadAnnouncements() {
+        const response = await fetch('/admin/api/announcements');
+        const announcements = await response.json();
+        const container = document.getElementById('announcementsList');
+        container.innerHTML = announcements.map(a => `
+            <div style="border-bottom: 1px solid #333; padding: 10px;">
+                <strong>${escapeHtml(a.title)}</strong><br>
+                ${escapeHtml(a.content)}<br>
+                <button onclick="deleteAnnouncement(${a.id})" class="danger">🗑️</button>
+            </div>
+        `).join('');
+    }
+    
+    // ========== فتح تعديل المستخدم ==========
+    function openEditUser(id, username, role, gold, gems) {
+        document.getElementById('editUserId').value = id;
+        document.getElementById('editUserGold').value = '';
+        document.getElementById('editUserGems').value = '';
+        
+        // تحميل قائمة الرتب
+        fetch('/admin/api/roles').then(res => res.json()).then(roles => {
+            const select = document.getElementById('editUserRole');
+            select.innerHTML = roles.map(r => `<option value="${r.name}" ${r.name === role ? 'selected' : ''}>${r.name}</option>`).join('');
+        });
+        
+        document.getElementById('editUserModal').style.display = 'flex';
+    }
+    
+    // ========== تحديث المستخدم ==========
+    async function updateUser() {
+        const userId = document.getElementById('editUserId').value;
+        const role = document.getElementById('editUserRole').value;
+        const gold = document.getElementById('editUserGold').value;
+        const gems = document.getElementById('editUserGems').value;
+        
+        await fetch('/admin/api/users/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, role, gold: parseInt(gold) || 0, gems: parseInt(gems) || 0 })
+        });
+        closeModal('editUserModal');
+        loadUsers();
+        loadStats();
+    }
+    
+    // ========== حظر مستخدم ==========
+    async function banUser() {
+        const userId = document.getElementById('editUserId').value;
+        const days = prompt('عدد أيام الحظر (0 للحظر الدائم):');
+        const reason = prompt('سبب الحظر:');
+        await fetch('/admin/api/users/ban', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, days: parseInt(days) || 0, reason })
+        });
+        closeModal('editUserModal');
+        loadUsers();
+    }
+    
+    // ========== كتم مستخدم ==========
+    async function muteUser() {
+        const userId = document.getElementById('editUserId').value;
+        const minutes = prompt('عدد دقائق الكتم:');
+        const reason = prompt('سبب الكتم:');
+        await fetch('/admin/api/users/mute', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, minutes: parseInt(minutes) || 60, reason })
+        });
+        closeModal('editUserModal');
+    }
+    
+    // ========== حذف غرفة ==========
+    async function deleteRoom(roomId) {
+        if (confirm('هل أنت متأكد من حذف هذه الغرفة؟')) {
+            await fetch('/admin/api/rooms/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ room_id: roomId })
+            });
+            loadRooms();
+        }
+    }
+    
+    // ========== معالجة التقرير ==========
+    async function resolveReport(reportId, status) {
+        await fetch('/admin/api/reports/resolve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ report_id: reportId, status })
+        });
+        loadReports();
+    }
+    
+    // ========== حذف هدية ==========
+    async function deleteGift(giftId) {
+        if (confirm('هل أنت متأكد؟')) {
+            await fetch('/admin/api/gifts/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ gift_id: giftId })
+            });
+            loadGifts();
+        }
+    }
+    
+    // ========== حذف سؤال مسابقة ==========
+    async function deleteContest(contestId) {
+        if (confirm('هل أنت متأكد؟')) {
+            await fetch('/admin/api/contests/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contest_id: contestId })
+            });
+            loadContests();
+        }
+    }
+    
+    // ========== حذف إعلان ==========
+    async function deleteAnnouncement(id) {
+        if (confirm('هل أنت متأكد؟')) {
+            await fetch('/admin/api/announcements/delete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            loadAnnouncements();
+        }
+    }
+    
+    // ========== إنشاء نسخة احتياطية ==========
+    async function createBackup() {
+        const response = await fetch('/admin/api/backup/create', { method: 'POST' });
+        const data = await response.json();
+        alert(data.message);
+        loadBackups();
+    }
+    
+    async function loadBackups() {
+        const response = await fetch('/admin/api/backup/list');
+        const backups = await response.json();
+        const container = document.getElementById('backupList');
+        container.innerHTML = backups.map(b => `
+            <div style="border-bottom: 1px solid #333; padding: 10px; display: flex; justify-content: space-between;">
+                <span>${b.name} - ${b.size}</span>
+                <button onclick="restoreBackup('${b.name}')">↩️ استعادة</button>
+            </div>
+        `).join('');
+    }
+    
+    async function restoreBackup(filename) {
+        if (confirm('تحذير: استعادة النسخة الاحتياطية ستحل محل البيانات الحالية. هل أنت متأكد؟')) {
+            await fetch('/admin/api/backup/restore', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename })
+            });
+            alert('تمت الاستعادة، سيتم تحديث الصفحة');
+            location.reload();
+        }
+    }
+    
+    // ========== حفظ الإعدادات ==========
+    async function saveSetting(key, value) {
+        await fetch('/admin/api/settings/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ key, value })
+        });
+    }
+    
+    // ========== تحميل الإعدادات ==========
+    async function loadSettings() {
+        const response = await fetch('/admin/api/settings');
+        const settings = await response.json();
+        if (settings.private_enabled) document.getElementById('settingPrivateEnabled').value = settings.private_enabled;
+        if (settings.min_private_rank) document.getElementById('settingMinPrivateRank').value = settings.min_private_rank;
+        if (settings.gold_to_gems) document.getElementById('settingGoldToGems').value = settings.gold_to_gems;
+        if (settings.youtube_enabled) document.getElementById('settingYoutubeEnabled').value = settings.youtube_enabled;
+    }
+    
+    // ========== دوال مساعدة ==========
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+    
+    function logout() {
+        fetch('/api/logout', { method: 'POST' }).then(() => window.location.href = '/');
+    }
+    
+    // ========== تبديل التبويبات ==========
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            const tabId = btn.getAttribute('data-tab');
+            document.getElementById(tabId + 'Tab').classList.add('active');
+            
+            // تحميل البيانات حسب التبويب
+            if (tabId === 'users') loadUsers();
+            else if (tabId === 'roles') loadRoles();
+            else if (tabId === 'rooms') loadRooms();
+            else if (tabId === 'reports') loadReports();
+            else if (tabId === 'gifts') loadGifts();
+            else if (tabId === 'contests') loadContests();
+            else if (tabId === 'announcements') loadAnnouncements();
+            else if (tabId === 'settings') loadSettings();
+            else if (tabId === 'backup') loadBackups();
+        });
+    });
+    
+    // ========== البحث عن مستخدم ==========
+    async function searchUsers() {
+        const query = document.getElementById('searchUser').value;
+        if (!query) return loadUsers();
+        const response = await fetch(`/admin/api/users/search?q=${encodeURIComponent(query)}`);
+        const users = await response.json();
+        const tbody = document.getElementById('usersList');
+        tbody.innerHTML = users.map(user => `
+            <tr>
+                <td>${user.id}</td>
+                <td>${escapeHtml(user.username)}</td>
+                <td>${user.role}</td>
+                <td>${user.gold}</td>
+                <td>${user.gems}</td>
+                <td>${user.messages_count}</td>
+                <td><button onclick="openEditUser(${user.id}, '${user.username}', '${user.role}', ${user.gold}, ${user.gems})">✏️ تعديل</button></td>
+            </tr>
+        `).join('');
+    }
+    
+    // ========== إنشاء غرفة ==========
+    function showCreateRoomModal() {
+        const name = prompt('اسم الغرفة (بالإنجليزية، بدون مسافات):');
+        const displayName = prompt('الاسم المعروض:');
+        const description = prompt('وصف الغرفة:');
+        if (name && displayName) {
+            fetch('/admin/api/rooms/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, display_name: displayName, description })
+            }).then(() => loadRooms());
+        }
+    }
+    
+    // ========== إضافة رتبة ==========
+    function showAddRoleModal() {
+        const name = prompt('اسم الرتبة الجديدة:');
+        const level = prompt('مستوى الرتبة (رقم):');
+        if (name && level) {
+            fetch('/admin/api/roles/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, rank_level: parseInt(level) })
+            }).then(() => loadRoles());
+        }
+    }
+    
+    // ========== التهيئة ==========
+    checkAdminAccess();
+    loadStats();
+    loadUsers();
+    setInterval(loadStats, 30000);
+</script>
+</body>
+</html>

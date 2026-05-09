@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>شات الحكومة | الدردشة الرئيسية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0-beta3/css/all.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-main: #0a0a12;
+            --bg-card: #1a1a2e;
+            --bg-input: #2a2a3e;
+            --gold: #D4AF37;
+            --gold-dark: #9C7E2E;
+            --text: #ffffff;
+            --text-muted: #888888;
+            --border: #2a2a3e;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-main);
+            color: var(--text);
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ========== الشريط العلوي ========== */
+        .top-bar {
+            background: var(--bg-card);
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--gold);
+        }
+        .left-icons, .right-icons { display: flex; gap: 15px; align-items: center; }
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: var(--gold);
+            position: relative;
+            transition: 0.2s;
+        }
+        .icon-btn:hover { color: white; transform: scale(1.05); }
+        .badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 8px;
+            height: 8px;
+            background: #ff0000;
+            border-radius: 50%;
+        }
+        .diamond-area { text-align: center; cursor: pointer; transition: 0.2s; }
+        .diamond-area:hover { transform: scale(1.05); }
+        .diamond-icon { font-size: 18px; display: block; color: var(--gold); }
+        .diamond-label { font-size: 9px; display: block; color: var(--gold); }
+        .profile-img {
+            width: 44px;
+            height: 44px;
+            background: var(--gold-dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            position: relative;
+            transition: 0.2s;
+        }
+        .profile-img:hover { transform: scale(1.05); background: var(--gold); }
+        .online-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 10px;
+            height: 10px;
+            background: #4CAF50;
+            border-radius: 50%;
+            border: 1px solid var(--bg-card);
+        }
+
+        /* ========== القائمة الجانبية ========== */
+        .drawer {
+            position: fixed;
+            top: 0;
+            right: -280px;
+            width: 280px;
+            height: 100%;
+            background: var(--bg-card);
+            z-index: 1000;
+            transition: 0.3s ease;
+            padding: 20px;
+            border-left: 1px solid var(--gold);
+            overflow-y: auto;
+        }
+        .drawer.open { right: 0; }
+        .drawer-header { margin-bottom: 20px; border-bottom: 1px solid var(--gold); padding-bottom: 10px; }
+        .drawer-header p { font-size: 12px; color: var(--gold); }
+        .drawer-header h4 { font-size: 20px; }
+        .drawer-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .drawer-item i { width: 25px; font-size: 18px; color: var(--gold); }
+        .drawer-item:hover { color: var(--gold); padding-right: 8px; }
+
+        /* ========== نافذة الحساب المنسدلة ========== */
+        .profile-dropdown {
+            position: absolute;
+            top: 70px;
+            left: 16px;
+            width: 220px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--gold);
+            z-index: 1001;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .profile-dropdown.show { display: block; }
+        .dropdown-item {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+            transition: 0.2s;
+        }
+        .dropdown-item i { width: 20px; color: var(--gold); }
+        .dropdown-item:last-child { border: none; }
+        .dropdown-item:hover { background: var(--gold-dark); color: black; }
+
+        /* ========== منطقة الرسائل ========== */
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .message {
+            background: var(--bg-card);
+            padding: 10px 14px;
+            border-radius: 18px;
+            max-width: 80%;
+            width: fit-content;
+        }
+        .message.own {
+            background: var(--gold-dark);
+            align-self: flex-end;
+            color: black;
+        }
+        .message-name { font-size: 12px; font-weight: bold; margin-bottom: 4px; }
+        .message-text { font-size: 14px; word-break: break-word; }
+        .message-time { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+        .system-msg {
+            text-align: center;
+            font-size: 12px;
+            background: rgba(212, 175, 55, 0.15);
+            padding: 6px 12px;
+            border-radius: 20px;
+            width: fit-content;
+            margin: 0 auto;
+        }
+
+        /* ========== شريط الإدخال ========== */
+        .input-bar {
+            background: var(--bg-card);
+            padding: 12px;
+            display: flex;
+            gap: 8px;
+            border-top: 1px solid var(--gold);
+        }
+        .input-icon {
+            background: var(--bg-input);
+            border: none;
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.2s;
+            color: var(--gold);
+        }
+        .input-icon:hover { background: var(--gold-dark); color: black; }
+        .message-input {
+            flex: 1;
+            background: var(--bg-input);
+            border: none;
+            border-radius: 30px;
+            padding: 0 18px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 14px;
+        }
+        .message-input:focus { outline: none; border: 1px solid var(--gold); }
+        .send-btn { background: var(--gold); color: black; }
+        .send-btn:hover { background: var(--gold-dark); }
+
+        /* ========== الشريط السفلي ========== */
+        .bottom-nav {
+            background: var(--bg-card);
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 12px;
+            border-top: 1px solid var(--gold);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: 0.2s;
+            color: var(--text-muted);
+        }
+        .nav-item i { font-size: 20px; }
+        .nav-item:hover { color: var(--gold); }
+
+        /* ========== النوافذ المنبثقة ========== */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1100;
+        }
+        .modal.show { display: flex; }
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 24px;
+            width: 90%;
+            max-width: 450px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 20px;
+            border: 1px solid var(--gold);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--gold);
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: var(--gold);
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: inherit;
+        }
+        button {
+            background: var(--gold);
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 16px;
+            background: var(--gold-dark);
+            color: black;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            z-index: 1200;
+            animation: fadeUp 0.3s ease;
+        }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ========== الهيدر ========== -->
+<div class="top-bar">
+    <div class="left-icons">
+        <button class="icon-btn" id="menuBtn"><i class="fas fa-bars"></i><div class="badge"></div></button>
+        <div class="diamond-area" id="diamondBtn">
+            <i class="fas fa-gem diamond-icon"></i>
+            <span class="diamond-label">الكبار</span>
+        </div>
+    </div>
+    <div class="right-icons">
+        <button class="icon-btn" id="notifBtn"><i class="fas fa-bell"></i></button>
+        <div class="profile-img" id="profileBtn">
+            <i class="fas fa-user"></i>
+            <div class="online-dot"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ========== القائمة الجانبية ========== -->
+<div id="drawer" class="drawer">
+    <div class="drawer-header">
+        <p><i class="fas fa-door-open"></i> الغرفة الحالية</p>
+        <h4><i class="fas fa-home"></i> الروم الرئيسية</h4>
+    </div>
+    <div class="drawer-item" data-modal="roomsModal"><i class="fas fa-comments"></i> قائمة الرومات</div>
+    <div class="drawer-item" data-modal="newsModal"><i class="fas fa-newspaper"></i> الأخبار</div>
+    <div class="drawer-item" data-modal="rankingModal"><i class="fas fa-trophy"></i> قائمة التصنيف</div>
+    <div class="drawer-item" data-modal="richModal"><i class="fas fa-crown"></i> قائمة الكبار</div>
+    <div class="drawer-item" data-modal="richModal"><i class="fas fa-gem"></i> قائمة الأثرياء</div>
+    <div class="drawer-item" data-modal="membersInteractionModal"><i class="fas fa-chart-line"></i> تفاعل الأعضاء</div>
+    <div class="drawer-item" data-modal="roomsInteractionModal"><i class="fas fa-chart-simple"></i> تفاعل الرومات</div>
+    <div class="drawer-item" data-modal="shopModal"><i class="fas fa-store"></i> متجر الشات</div>
+    <div class="drawer-item" data-modal="contestModal"><i class="fas fa-gamepad"></i> المسابقات</div>
+    <div class="drawer-item" data-modal="gamesModal"><i class="fas fa-dice"></i> الألعاب</div>
+    <div class="drawer-item" data-modal="friendsModal"><i class="fas fa-users"></i> الأصدقاء</div>
+    <div class="drawer-item" data-modal="wallModal"><i class="fas fa-wall"></i> الحائط</div>
+    <div class="drawer-item" id="adminPanelBtn" style="display: none;"><i class="fas fa-shield-alt"></i> لوحة المالك</div>
+</div>
+
+<!-- ========== نافذة الحساب ========== -->
+<div id="profileDropdown" class="profile-dropdown">
+    <div class="dropdown-item" data-modal="walletModal"><i class="fas fa-wallet"></i> محفظتي</div>
+    <div class="dropdown-item" data-modal="editProfileModal"><i class="fas fa-user-edit"></i> تحرير الملف الشخصي</div>
+    <div class="dropdown-item" id="invisibleModeBtn"><i class="fas fa-eye-slash"></i> وضع التخفي</div>
+    <div class="dropdown-item" id="refreshPageBtn"><i class="fas fa-sync-alt"></i> تحديث صفحة الشات</div>
+    <div class="dropdown-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> خروج</div>
+</div>
+
+<!-- ========== منطقة الرسائل ========== -->
+<div class="messages-area" id="messagesArea">
+    <div class="system-msg"><i class="fas fa-star"></i> مرحباً بك في شات الحكومة <i class="fas fa-star"></i></div>
+    <div class="system-msg"><i class="fas fa-user-plus"></i> انضم Admin إلى الغرفة</div>
+</div>
+
+<!-- ========== شريط الإدخال ========== -->
+<div class="input-bar">
+    <button class="input-icon" id="attachBtn"><i class="fas fa-paperclip"></i></button>
+    <button class="input-icon" id="voiceBtn"><i class="fas fa-microphone"></i></button>
+    <input type="text" class="message-input" id="messageInput" placeholder="اكتب رسالتك...">
+    <button class="input-icon send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+</div>
+
+<!-- ========== الشريط السفلي ========== -->
+<div class="bottom-nav">
+    <div class="nav-item" data-modal="radioModal"><i class="fas fa-headphones"></i><span>الراديو</span></div>
+    <div class="nav-item" data-modal="shopModal"><i class="fas fa-store"></i><span>المتجر</span></div>
+    <div class="nav-item" data-modal="registerModal"><i class="fas fa-user-plus"></i><span>التسجيل</span></div>
+    <div class="nav-item" data-modal="roomsModal"><i class="fas fa-door-open"></i><span>الغرف</span></div>
+    <div class="nav-item" data-modal="membersModal"><i class="fas fa-users"></i><span>المتواجدين</span></div>
+    <div class="nav-item" id="settingsBtn"><i class="fas fa-cog"></i><span>الإعدادات</span></div>
+</div>
+
+<!-- ========== جميع النوافذ المنبثقة ========== -->
+<div id="walletModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-wallet"></i> محفظتي</h3><button class="close-modal" data-close="walletModal"><i class="fas fa-times"></i></button></div><div style="text-align:center;padding:20px"><i class="fas fa-coins" style="font-size:48px;color:var(--gold)"></i><div id="walletGold" style="font-size:24px">0</div><div>الذهب</div><div style="margin-top:15px"><i class="fas fa-gem" style="font-size:48px;color:var(--gold)"></i><div id="walletGems" style="font-size:24px">0</div><div>الجواهر</div></div><button onclick="showToast('تم التحويل', '1000 ذهب → 1 جوهرة')"><i class="fas fa-exchange-alt"></i> تحويل</button></div></div></div>
+<div id="editProfileModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-user-edit"></i> تحرير الملف</h3><button class="close-modal" data-close="editProfileModal"><i class="fas fa-times"></i></button></div><input type="text" id="editName" placeholder="اسم المستخدم"><input type="number" id="editAge" placeholder="العمر"><select id="editGender"><option>ذكر</option><option>أنثى</option></select><input type="text" id="editStatus" placeholder="الحالة"><button onclick="showToast('تم الحفظ', 'تم تحديث الملف الشخصي')"><i class="fas fa-save"></i> حفظ</button></div></div>
+<div id="roomsModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-door-open"></i> الغرف</h3><button class="close-modal" data-close="roomsModal"><i class="fas fa-times"></i></button></div><div id="roomsList"><div class="drawer-item"><i class="fas fa-home"></i> الرئيسية</div><div class="drawer-item"><i class="fas fa-gamepad"></i> الألعاب</div><div class="drawer-item"><i class="fas fa-microphone-alt"></i> الصوتية</div></div><button onclick="showToast('إنشاء غرفة', 'تم إنشاء الغرفة')"><i class="fas fa-plus"></i> إنشاء غرفة جديدة</button></div></div>
+<div id="membersModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-users"></i> المتواجدون</h3><button class="close-modal" data-close="membersModal"><i class="fas fa-times"></i></button></div><div id="membersList"><div class="dropdown-item"><i class="fas fa-crown"></i> Admin (مدير)</div><div class="dropdown-item"><i class="fas fa-user"></i> زائر 1</div><div class="dropdown-item"><i class="fas fa-user"></i> زائر 2</div></div></div></div>
+<div id="shopModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-store"></i> المتجر</h3><button class="close-modal" data-close="shopModal"><i class="fas fa-times"></i></button></div><div id="shopList"><div class="dropdown-item" onclick="showToast('شراء', 'تم شراء الوردة')"><i class="fas fa-rose"></i> وردة - 10 🪙</div><div class="dropdown-item" onclick="showToast('شراء', 'تم شراء الهدية')"><i class="fas fa-gift"></i> هدية - 50 🪙</div><div class="dropdown-item" onclick="showToast('شراء', 'تم شراء الماسة')"><i class="fas fa-gem"></i> ماسة - 100 🪙</div></div></div></div>
+<div id="radioModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-headphones"></i> الراديو</h3><button class="close-modal" data-close="radioModal"><i class="fas fa-times"></i></button></div><audio id="radioPlayer" controls style="width:100%"><source src="https://radio.net/s/arabicmix"></audio><div style="display:flex;gap:10px;margin-top:10px"><button onclick="changeRadio('https://radio.net/s/bbc_arabic')"><i class="fas fa-broadcast-tower"></i> BBC</button><button onclick="changeRadio('https://radio.net/s/mbc_fm')"><i class="fas fa-music"></i> MBC FM</button></div></div></div>
+<div id="newsModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-newspaper"></i> الأخبار</h3><button class="close-modal" data-close="newsModal"><i class="fas fa-times"></i></button></div><div id="newsList"><div class="system-msg"><i class="fas fa-bullhorn"></i> مرحباً بك في شات الحكومة</div><div class="system-msg"><i class="fas fa-trophy"></i> مسابقة اليوم: اربح 100 ذهب</div></div><button onclick="showToast('إعلان', 'تم إضافة الإعلان')"><i class="fas fa-plus"></i> إضافة إعلان جديد</button></div></div>
+<div id="rankingModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-trophy"></i> قائمة التصنيف</h3><button class="close-modal" data-close="rankingModal"><i class="fas fa-times"></i></button></div><div><div class="dropdown-item"><i class="fas fa-crown"></i> Admin - 10000 🪙</div><div class="dropdown-item"><i class="fas fa-user"></i> مستخدم 1 - 5000 🪙</div><div class="dropdown-item"><i class="fas fa-user"></i> مستخدم 2 - 2500 🪙</div></div></div></div>
+<div id="richModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-gem"></i> قائمة الأثرياء</h3><button class="close-modal" data-close="richModal"><i class="fas fa-times"></i></button></div><div><div class="dropdown-item"><i class="fas fa-crown"></i> Admin - 1000 💎</div><div class="dropdown-item"><i class="fas fa-user"></i> مستخدم 1 - 500 💎</div></div></div></div>
+<div id="membersInteractionModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-chart-line"></i> تفاعل الأعضاء</h3><button class="close-modal" data-close="membersInteractionModal"><i class="fas fa-times"></i></button></div><div><i class="fas fa-envelope"></i> إجمالي الرسائل اليوم: 1,250</div><div><i class="fas fa-crown"></i> أكثر عضو نشاط: Admin (500 رسالة)</div></div></div>
+<div id="roomsInteractionModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-chart-simple"></i> تفاعل الرومات</h3><button class="close-modal" data-close="roomsInteractionModal"><i class="fas fa-times"></i></button></div><div><i class="fas fa-home"></i> الرئيسية: 1,000 رسالة</div><div><i class="fas fa-gamepad"></i> الألعاب: 250 رسالة</div></div></div>
+<div id="contestModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-gamepad"></i> المسابقة اليومية</h3><button class="close-modal" data-close="contestModal"><i class="fas fa-times"></i></button></div><div id="contestQuestion" class="system-msg"><i class="fas fa-question-circle"></i> ما هي عاصمة مصر؟</div><input type="text" id="contestAnswer" placeholder="أدخل إجابتك"><button onclick="showToast('إجابة', 'تم إرسال الإجابة')"><i class="fas fa-paper-plane"></i> إجابة</button><div id="contestResult"></div></div></div>
+<div id="gamesModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-dice"></i> الألعاب</h3><button class="close-modal" data-close="gamesModal"><i class="fas fa-times"></i></button></div><button onclick="playLiarGame()"><i class="fas fa-mask"></i> لعبة الكذابين</button><button onclick="spinWheel()"><i class="fas fa-wheelchair"></i> عجلة الحظ</button><div id="gameResult" style="margin-top:10px"></div></div></div>
+<div id="friendsModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-users"></i> الأصدقاء</h3><button class="close-modal" data-close="friendsModal"><i class="fas fa-times"></i></button></div><div id="friendsList"><div class="dropdown-item"><i class="fas fa-user-friends"></i> صديق 1</div><div class="dropdown-item"><i class="fas fa-user-friends"></i> صديق 2</div></div><input type="text" id="friendName" placeholder="اسم المستخدم"><button onclick="showToast('تم الإرسال', 'تم إرسال طلب الصداقة')"><i class="fas fa-user-plus"></i> إضافة صديق</button></div></div>
+<div id="wallModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-wall"></i> الحائط</h3><button class="close-modal" data-close="wallModal"><i class="fas fa-times"></i></button></div><div id="wallPosts"><div class="message"><i class="fas fa-user"></i> Admin: مرحباً بالجميع في الحائط الجديد!</div></div><textarea id="postContent" placeholder="اكتب منشوراً..." rows="3"></textarea><button onclick="showToast('تم النشر', 'تم نشر منشورك')"><i class="fas fa-share-alt"></i> نشر</button></div></div>
+<div id="registerModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-user-plus"></i> إنشاء حساب جديد</h3><button class="close-modal" data-close="registerModal"><i class="fas fa-times"></i></button></div><input type="text" placeholder="اسم المستخدم"><input type="email" placeholder="البريد الإلكتروني"><input type="password" placeholder="كلمة المرور"><select><option>ذكر</option><option>أنثى</option></select><button onclick="showToast('تم التسجيل', 'مرحباً بك في شات الحكومة')"><i class="fas fa-check"></i> إنشاء حساب</button></div></div>
+<div id="settingsModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-cog"></i> الإعدادات</h3><button class="close-modal" data-close="settingsModal"><i class="fas fa-times"></i></button></div><div class="dropdown-item" data-modal="editProfileModal"><i class="fas fa-user-edit"></i> تحرير الملف الشخصي</div><div class="dropdown-item" data-modal="privacyModal"><i class="fas fa-lock"></i> إعدادات الخصوصية</div><div class="dropdown-item" data-modal="soundsModal"><i class="fas fa-volume-up"></i> إعدادات الأصوات</div></div></div>
+<div id="privacyModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-lock"></i> الخصوصية</h3><button class="close-modal" data-close="privacyModal"><i class="fas fa-times"></i></button></div><label><input type="checkbox" id="hideAge"> <i class="fas fa-eye-slash"></i> إخفاء عمري</label><br><label><input type="checkbox" id="hideLocation"> <i class="fas fa-map-marker-alt"></i> إخفاء موقعي</label><br><label><input type="checkbox" id="disablePrivate"> <i class="fas fa-ban"></i> تعطيل الرسائل الخاصة</label><button onclick="showToast('تم الحفظ', 'تم تحديث إعدادات الخصوصية')"><i class="fas fa-save"></i> حفظ</button></div></div>
+<div id="soundsModal" class="modal"><div class="modal-content"><div class="modal-header"><h3><i class="fas fa-volume-up"></i> الأصوات</h3><button class="close-modal" data-close="soundsModal"><i class="fas fa-times"></i></button></div><label><input type="checkbox" id="soundPublic" checked> <i class="fas fa-bell"></i> صوت العام</label><br><label><input type="checkbox" id="soundPrivate" checked> <i class="fas fa-envelope"></i> صوت الخاص</label><br><label><input type="checkbox" id="soundClick" checked> <i class="fas fa-hand-pointer"></i> صوت الضغط على الاسم</label><button onclick="showToast('تم الحفظ', 'تم تحديث إعدادات الأصوات')"><i class="fas fa-save"></i> حفظ</button></div></div>
+
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+    // ========== دوال النوافذ ==========
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) modal.classList.add('show');
+        else console.log('Modal not found:', modalId);
+    }
+    
+    function closeAllModals() {
+        document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+        document.getElementById('drawer')?.classList.remove('open');
+        document.getElementById('profileDropdown')?.classList.remove('show');
+    }
+    
+    // إغلاق النافذة عند الضغط على الخلفية المعتمة
+    document.querySelectorAll('.modal').forEach(modal => {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('show');
+            }
+        });
+    });
+    
+    function showToast(title, message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.innerHTML = `<i class="fas fa-info-circle"></i> <strong>${title}</strong><br>${message}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+    
+    function changeRadio(url) {
+        const player = document.getElementById('radioPlayer');
+        if (player) {
+            player.src = url;
+            player.play();
+            showToast('الراديو', 'تم تغيير المحطة');
+        }
+    }
+    
+    function playLiarGame() {
+        const num = Math.floor(Math.random() * 10) + 1;
+        const guess = prompt('🔮 خمن الرقم من 1 إلى 10');
+        if (guess && parseInt(guess) === num) {
+            showToast('🎉 فزت!', 'حصلت على 50 ذهب');
+        } else if (guess) {
+            showToast('❌ خسرت!', `الرقم كان ${num}`);
+        }
+    }
+    
+    function spinWheel() {
+        const prizes = ['10 ذهب', '50 ذهب', '100 ذهب', '1 جوهرة', '5 جواهر', 'جرب مرة أخرى'];
+        const prize = prizes[Math.floor(Math.random() * prizes.length)];
+        showToast('🎰 عجلة الحظ', `ربحت: ${prize}`);
+    }
+    
+    // ========== تحميل بيانات المستخدم ==========
+    async function loadUserStats() {
+        try {
+            const response = await fetch('/api/user/stats');
+            if (response.ok) {
+                const user = await response.json();
+                const goldSpan = document.getElementById('walletGold');
+                const gemsSpan = document.getElementById('walletGems');
+                if (goldSpan) goldSpan.innerText = user.gold || 0;
+                if (gemsSpan) gemsSpan.innerText = user.gems || 0;
+                if (user.role === 'owner') {
+                    const adminBtn = document.getElementById('adminPanelBtn');
+                    if (adminBtn) adminBtn.style.display = 'flex';
+                }
+            }
+        } catch(e) { console.log('خطأ في تحميل المستخدم'); }
+    }
+    
+    // ========== الدردشة ==========
+        let socket = null;
+    let currentRoom = 'main';
+    
+    function initSocket() {
+        socket = io();
+        socket.on('connect', () => {
+            socket.emit('join', { room: currentRoom });
+            addSystemMessage('<i class="fas fa-check-circle"></i> تم الاتصال بالخادم');
+        });
+        socket.on('new_message', (data) => {
+            addMessageToChat(data.username, data.message, false);
+        });
+        socket.on('user_joined', (data) => {
+            addSystemMessage(`<i class="fas fa-user-plus"></i> ${data.message}`);
+        });
+        socket.on('user_left', (data) => {
+            addSystemMessage(`<i class="fas fa-user-minus"></i> ${data.message}`);
+        });
+    }
+    
+    function addMessageToChat(username, message, isOwn) {
+        const container = document.getElementById('messagesArea');
+        const div = document.createElement('div');
+        div.className = `message ${isOwn ? 'own' : ''}`;
+        div.innerHTML = `
+            <div class="message-name"><i class="fas fa-user"></i> ${escapeHtml(username)}</div>
+            <div class="message-text">${escapeHtml(message)}</div>
+            <div class="message-time"><i class="far fa-clock"></i> ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+        `;
+        container.appendChild(div);
+        scrollToBottom();
+    }
+    
+    function addSystemMessage(message) {
+        const container = document.getElementById('messagesArea');
+        const div = document.createElement('div');
+        div.className = 'system-msg';
+        div.innerHTML = message;
+        container.appendChild(div);
+        scrollToBottom();
+    }
+    
+    function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+        if (message && socket) {
+            socket.emit('send_message', { room: currentRoom, message: message });
+            addMessageToChat('أنت', message, true);
+            input.value = '';
+        }
+    }
+    
+    function scrollToBottom() {
+        const container = document.getElementById('messagesArea');
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+    
+    // ========== تسجيل الخروج ==========
+    async function logout() {
+        await fetch('/api/logout', { method: 'POST' });
+        window.location.href = '/';
+    }
+    
+    // ========== ربط الأزرار عند تحميل الصفحة ==========
+    document.addEventListener('DOMContentLoaded', async () => {
+        await loadUserStats();
+        initSocket();
+        
+        // ربط أزرار الهيدر
+        const menuBtn = document.getElementById('menuBtn');
+        const notifBtn = document.getElementById('notifBtn');
+        const profileBtn = document.getElementById('profileBtn');
+        const diamondBtn = document.getElementById('diamondBtn');
+        
+        if (menuBtn) menuBtn.addEventListener('click', () => document.getElementById('drawer').classList.toggle('open'));
+        if (notifBtn) notifBtn.addEventListener('click', () => openModal('newsModal'));
+        if (profileBtn) profileBtn.addEventListener('click', (e) => { e.stopPropagation(); document.getElementById('profileDropdown').classList.toggle('show'); });
+        if (diamondBtn) diamondBtn.addEventListener('click', () => openModal('richModal'));
+        
+        // ربط أزرار الحساب
+        const refreshBtn = document.getElementById('refreshPageBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const invisibleBtn = document.getElementById('invisibleModeBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const adminPanelBtn = document.getElementById('adminPanelBtn');
+        
+        if (refreshBtn) refreshBtn.addEventListener('click', () => location.reload());
+        if (logoutBtn) logoutBtn.addEventListener('click', logout);
+        if (invisibleBtn) invisibleBtn.addEventListener('click', async () => { await fetch('/api/toggle-invisible', { method: 'POST' }); showToast('وضع التخفي', 'تم التفعيل'); });
+        if (settingsBtn) settingsBtn.addEventListener('click', () => openModal('settingsModal'));
+        if (adminPanelBtn) adminPanelBtn.addEventListener('click', () => window.location.href = '/admin');
+        
+        // ربط أزرار الدردشة
+        const sendBtn = document.getElementById('sendBtn');
+        const messageInput = document.getElementById('messageInput');
+        const voiceBtn = document.getElementById('voiceBtn');
+        const attachBtn = document.getElementById('attachBtn');
+        
+        if (sendBtn) sendBtn.addEventListener('click', sendMessage);
+        if (messageInput) messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+        if (voiceBtn) voiceBtn.addEventListener('click', () => { showToast('تسجيل صوتي', 'جاري التسجيل... (5 ثوانٍ)'); setTimeout(() => showToast('تسجيل صوتي', 'تم الإرسال'), 5000); });
+        if (attachBtn) attachBtn.addEventListener('click', () => { showToast('رفع ملف', 'سيتم فتح معرض الصور'); });
+        
+        // ربط جميع عناصر data-modal
+        document.querySelectorAll('[data-modal]').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const modalId = el.getAttribute('data-modal');
+                if (modalId) openModal(modalId);
+            });
+        });
+        
+        // ربط أزرار الإغلاق (الزر X)
+        document.querySelectorAll('.close-modal, [data-close]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const id = btn.getAttribute('data-close');
+                if (id) {
+                    const modal = document.getElementById(id);
+                    if (modal) modal.classList.remove('show');
+                } else {
+                    const modal = btn.closest('.modal');
+                    if (modal) modal.classList.remove('show');
+                }
+            });
+        });
+        
+        // إغلاق القوائم عند الضغط خارجها
+        document.addEventListener('click', (e) => {
+            const dropdown = document.getElementById('profileDropdown');
+            const drawer = document.getElementById('drawer');
+            const profileBtn = document.getElementById('profileBtn');
+            const menuBtn = document.getElementById('menuBtn');
+            
+            if (dropdown && !dropdown.contains(e.target) && e.target !== profileBtn && !profileBtn?.contains(e.target)) {
+                dropdown.classList.remove('show');
+            }
+            if (drawer && !drawer.contains(e.target) && e.target !== menuBtn && !menuBtn?.contains(e.target)) {
+                drawer.classList.remove('open');
+            }
+        });
+        
+        // تحديث العملات كل دقيقة
+        setInterval(loadUserStats, 60000);
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>شات الحكومة | الدردشة الرئيسية</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/static/manifest.json">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #7eb311;
+            --primary-dark: #5a8a0a;
+            --bg-dark: #0a0a12;
+            --bg-card: #1a1a2e;
+            --bg-input: #2a2a3e;
+            --text: #ffffff;
+            --text-muted: #888;
+            --danger: #dc2626;
+            --warning: #f59e0b;
+            --success: #10b981;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ========== الشريط العلوي ========== */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: var(--bg-card);
+            border-bottom: 1px solid rgba(126, 179, 17, 0.3);
+        }
+
+        .left-icons, .right-icons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--primary);
+            padding: 8px;
+            transition: 0.2s;
+            border-radius: 12px;
+        }
+
+        .icon-btn:hover {
+            background: rgba(126, 179, 17, 0.1);
+            transform: scale(1.05);
+        }
+
+        .diamond-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            background: rgba(126, 179, 17, 0.15);
+            padding: 5px 12px;
+            border-radius: 25px;
+            transition: 0.2s;
+        }
+
+        .diamond-box:hover {
+            background: rgba(126, 179, 17, 0.3);
+        }
+
+        .diamond-box span:first-child {
+            font-size: 20px;
+        }
+
+        .diamond-box span:last-child {
+            font-size: 10px;
+            color: var(--primary);
+        }
+
+        .profile-img {
+            width: 44px;
+            height: 44px;
+            background: var(--bg-input);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            border: 2px solid var(--primary);
+            transition: 0.2s;
+        }
+
+        .profile-img:hover {
+            transform: scale(1.05);
+        }
+
+        /* ========== منطقة الرسائل ========== */
+        .messages-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            display: flex;
+            gap: 10px;
+            max-width: 85%;
+            animation: fadeIn 0.2s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.own {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            background: var(--bg-input);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .bubble {
+            background: var(--bg-input);
+            padding: 10px 16px;
+            border-radius: 20px;
+            max-width: 100%;
+        }
+
+        .message.own .bubble {
+            background: var(--primary);
+        }
+
+        .message-name {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .message-text {
+            font-size: 14px;
+            word-break: break-word;
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            text-align: left;
+        }
+
+        .system-msg {
+            text-align: center;
+            background: rgba(126, 179, 17, 0.1);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            width: fit-content;
+            margin: 4px auto;
+            color: var(--primary);
+        }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-input);
+            border-radius: 20px;
+            width: fit-content;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-6px); opacity: 1; }
+        }
+
+        /* ========== شريط الإدخال ========== */
+        .input-bar {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            background: var(--bg-card);
+            border-top: 1px solid rgba(126, 179, 17, 0.3);
+        }
+
+        .input-icon {
+            background: var(--bg-input);
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            font-size: 22px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-icon:hover {
+            background: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .send-icon {
+            background: var(--primary);
+        }
+
+        .message-input {
+            flex: 1;
+            background: var(--bg-input);
+            border: none;
+            border-radius: 40px;
+            padding: 0 20px;
+            color: white;
+            font-size: 16px;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border: 1px solid var(--primary);
+        }
+
+        /* ========== الشريط السفلي ========== */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            background: var(--bg-card);
+            padding: 8px 12px;
+            border-top: 1px solid rgba(126, 179, 17, 0.3);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            font-size: 22px;
+            gap: 4px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            transition: 0.2s;
+        }
+
+        .nav-item:hover {
+            background: rgba(126, 179, 17, 0.1);
+        }
+
+        .nav-item span {
+            font-size: 10px;
+            color: var(--text-muted);
+        }
+
+        /* ========== القائمة الجانبية ========== */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -300px;
+            width: 280px;
+            height: 100%;
+            background: var(--bg-card);
+            transition: 0.3s;
+            z-index: 1000;
+            padding: 20px;
+            border-left: 1px solid var(--primary);
+            overflow-y: auto;
+        }
+
+        .sidebar.open {
+            right: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(126, 179, 17, 0.3);
+        }
+
+        .close-sidebar {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: var(--primary);
+            cursor: pointer;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            border-radius: 15px;
+            transition: 0.2s;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(126, 179, 17, 0.1);
+        }
+
+        /* ========== النوافذ المنبثقة العامة ========== */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1200;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 28px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 20px;
+            border: 1px solid var(--primary);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--primary);
+            padding-bottom: 12px;
+            margin-bottom: 15px;
+        }
+
+        .modal-header h3 {
+            color: var(--primary);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--primary);
+        }
+
+        /* ========== يوتيوب منبثق ========== */
+        .youtube-modal {
+            max-width: 700px;
+        }
+
+        .youtube-search {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .youtube-search input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 25px;
+            border: none;
+            background: var(--bg-input);
+            color: white;
+        }
+
+        .youtube-results {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .youtube-video {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 15px;
+            transition: 0.2s;
+        }
+
+        .youtube-video:hover {
+            background: rgba(126, 179, 17, 0.1);
+        }
+
+        .youtube-video img {
+            width: 120px;
+            border-radius: 10px;
+        }
+
+        .youtube-video-info h4 {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .youtube-video-info p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .video-player {
+            margin-top: 15px;
+            display: none;
+        }
+
+        .video-player iframe {
+            width: 100%;
+            height: 250px;
+            border-radius: 15px;
+        }
+
+        /* ========== التواجدين ========== */
+        .users-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            border-radius: 15px;
+        }
+
+        .user-item:hover {
+            background: rgba(126, 179, 17, 0.1);
+        }
+
+        .user-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        /* ========== المسابقات ========== */
+        .contest-question {
+            background: rgba(126, 179, 17, 0.1);
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+        }
+
+        .contest-answer {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .contest-answer input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 25px;
+            border: none;
+            background: var(--bg-input);
+            color: white;
+        }
+
+        /* ========== إعدادات الصوت ========== */
+        .settings-section {
+            margin-bottom: 20px;
+        }
+
+        .settings-section h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .toggle-switch {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .toggle-input {
+            width: 44px;
+            height: 24px;
+            background: var(--bg-input);
+            border-radius: 30px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .toggle-input.active {
+            background: var(--primary);
+        }
+
+        .toggle-input::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.2s;
+        }
+
+        .toggle-input.active::after {
+            left: 22px;
+        }
+
+        /* ========== رفع الملفات ========== */
+        #fileInput {
+            display: none;
+        }
+
+        /* ========== التسجيل الصوتي ========== */
+        .voice-recording {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: var(--bg-input);
+            border-radius: 40px;
+            margin-top: 10px;
+        }
+
+        .recording-animation {
+            width: 12px;
+            height: 12px;
+            background: red;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(1.5); }
+        }
+
+        /* ========== إشعارات منبثقة ========== */
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--bg-card);
+            border-right: 4px solid var(--primary);
+            padding: 12px 20px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1300;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* ========== التمرير ========== */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-input);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div style="display: flex; flex-direction: column; height: 100%;">
+    <!-- الشريط العلوي -->
+    <div class="top-bar">
+        <div class="left-icons">
+            <button class="icon-btn" id="menuBtn">☰</button>
+            <div class="diamond-box" id="diamondBtn">
+                <span>💎</span>
+                <span>الكبار</span>
+            </div>
+        </div>
+        <div class="right-icons">
+            <button class="icon-btn" id="notifBtn">🔔</button>
+            <div class="profile-img" id="profileBtn">
+                <span id="profileEmoji">👤</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- منطقة الرسائل -->
+    <div class="messages-container" id="messagesContainer">
+        <div class="system-msg">✨ مرحباً بك في شات الحكومة ✨</div>
+        <div class="typing-indicator" id="typingIndicator">
+            <span>يكتب...</span>
+            <div class="typing-dots">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- شريط الإدخال -->
+    <div class="input-bar">
+        <button class="input-icon" id="attachBtn" title="رفع ملف">➕</button>
+        <button class="input-icon" id="youtubeBtn" title="يوتيوب">▶️</button>
+        <button class="input-icon" id="voiceBtn" title="تسجيل صوتي">🎤</button>
+        <input type="text" class="message-input" id="messageInput" placeholder="اكتب رسالتك...">
+        <button class="input-icon send-icon" id="sendBtn">📨</button>
+    </div>
+    <div class="voice-recording" id="voiceRecording">
+        <div class="recording-animation"></div>
+        <span>جاري التسجيل...</span>
+        <button class="icon-btn" id="stopRecordingBtn" style="background: var(--danger); font-size: 14px;">إيقاف</button>
+    </div>
+
+    <!-- الشريط السفلي -->
+    <div class="bottom-nav">
+        <div class="nav-item" data-modal="membersModal">👥<span>المتواجدين</span></div>
+        <div class="nav-item" data-modal="roomsModal">🏠<span>الغرف</span></div>
+        <div class="nav-item" data-modal="shopModal">🛒<span>المتجر</span></div>
+        <div class="nav-item" id="registerNavBtn" style="display: none;">📝<span>التسجيل</span></div>
+        <div class="nav-item" data-modal="radioModal">📻<span>الراديو</span></div>
+        <div class="nav-item" id="settingsBtn">⚙️<span>الإعدادات</span></div>
+    </div>
+</div>
+
+<!-- ========== القائمة الجانبية ========== -->
+<div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+        <h3 style="color: var(--primary);">القائمة</h3>
+        <button class="close-sidebar" id="closeSidebar">✕</button>
+    </div>
+    <div class="sidebar-item" data-modal="roomsModal">🏠 الرومات</div>
+    <div class="sidebar-item" data-modal="newsModal">📰 الأخبار</div>
+    <div class="sidebar-item" data-modal="richModal">💎 الأثرياء (جواهر)</div>
+    <div class="sidebar-item" data-modal="membersInteractionModal">👥 تفاعل الأعضاء</div>
+    <div class="sidebar-item" data-modal="roomsInteractionModal">🚪 تفاعل الرومات</div>
+    <div class="sidebar-item" data-modal="shopModal">🛒 متجر الشات</div>
+    <div class="sidebar-item" data-modal="contestPointsModal">🏆 نقاط المسابقات</div>
+    <div class="sidebar-item" data-modal="contestModal">🎮 المسابقات</div>
+    <div class="sidebar-item" id="adminPanelBtn" style="display: none;">👑 لوحة المالك</div>
+</div>
+
+<!-- باقي النوافذ المنبثقة (سيتم إكمالها في الجزء الثاني) -->
+<!-- ========== النوافذ المنبثقة ========== -->
+
+<!-- نافذة الكبار (الأثرياء بالذهب) -->
+<div id="diamondModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>💎 كبار الشات (الذهب)</h3>
+            <button class="close-modal" data-close="diamondModal">&times;</button>
+        </div>
+        <div id="richListGold">جاري التحميل...</div>
+    </div>
+</div>
+
+<!-- نافذة الإشعارات -->
+<div id="notifModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🔔 الإشعارات</h3>
+            <button class="close-modal" data-close="notifModal">&times;</button>
+        </div>
+        <div id="notificationsList" style="max-height: 400px; overflow-y: auto;">جاري التحميل...</div>
+    </div>
+</div>
+
+<!-- نافذة الملف الشخصي -->
+<div id="profileModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>👤 حسابي</h3>
+            <button class="close-modal" data-close="profileModal">&times;</button>
+        </div>
+        <div id="profileContent">
+            <div class="sidebar-item" data-modal="walletModal">💰 محفظتي</div>
+            <div class="sidebar-item" data-modal="editProfileModal">✏️ تحرير الملف الشخصي</div>
+            <div class="sidebar-item" data-modal="friendsModal">👥 أصدقائي</div>
+            <div class="sidebar-item" data-modal="giftsReceivedModal">🎁 الهدايا المستلمة</div>
+            <div class="sidebar-item" id="refreshPageBtn">🔄 تحديث الصفحة</div>
+            <div class="sidebar-item" id="logoutBtn">🚪 خروج</div>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة المحفظة -->
+<div id="walletModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>💰 محفظتي</h3>
+            <button class="close-modal" data-close="walletModal">&times;</button>
+        </div>
+        <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 48px;">🪙</div>
+            <div id="walletGold" style="font-size: 24px; color: var(--primary);">0</div>
+            <div>الذهب</div>
+            <div style="margin-top: 15px; font-size: 48px;">💎</div>
+            <div id="walletGems" style="font-size: 24px; color: var(--primary);">0</div>
+            <div>الجواهر</div>
+            <button class="btn btn-primary" style="margin-top: 20px;" onclick="openModal('shopModal')">🛒 الذهاب للمتجر</button>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة تحرير الملف الشخصي -->
+<div id="editProfileModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>✏️ تحرير الملف الشخصي</h3>
+            <button class="close-modal" data-close="editProfileModal">&times;</button>
+        </div>
+        <div>
+            <label>العمر</label>
+            <input type="number" id="editAge" class="message-input" style="width: 100%; margin: 10px 0; padding: 10px;">
+            <label>الجنس</label>
+            <select id="editGender" class="message-input" style="width: 100%; margin: 10px 0; padding: 10px;">
+                <option value="ذكر">ذكر</option>
+                <option value="أنثى">أنثى</option>
+            </select>
+            <label>حالتي</label>
+            <input type="text" id="editStatus" class="message-input" style="width: 100%; margin: 10px 0; padding: 10px;" placeholder="اكتب حالتك...">
+            <label>لون الاسم</label>
+            <input type="color" id="editNameColor" style="width: 100%; margin: 10px 0;">
+            <button class="btn btn-primary" onclick="saveProfile()" style="width: 100%;">💾 حفظ التغييرات</button>
+            <div class="system-msg" style="margin-top: 10px;">⚠️ لا يمكن تغيير الجنس والعمر إلا مرة واحدة</div>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة الأصدقاء -->
+<div id="friendsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>👥 أصدقائي</h3>
+            <button class="close-modal" data-close="friendsModal">&times;</button>
+        </div>
+        <div id="friendsList">جاري التحميل...</div>
+        <div class="sidebar-item" data-modal="friendRequestsModal">📨 طلبات الصداقة</div>
+    </div>
+</div>
+
+<!-- نافذة طلبات الصداقة -->
+<div id="friendRequestsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📨 طلبات الصداقة</h3>
+            <button class="close-modal" data-close="friendRequestsModal">&times;</button>
+        </div>
+        <div id="friendRequestsList">جاري التحميل...</div>
+    </div>
+</div>
+
+<!-- نافذة الهدايا المستلمة -->
+<div id="giftsReceivedModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🎁 الهدايا المستلمة</h3>
+            <button class="close-modal" data-close="giftsReceivedModal">&times;</button>
+        </div>
+        <div id="giftsReceivedList">جاري التحميل...</div>
+    </div>
+</div>
+
+<!-- نافذة الغرف -->
+<div id="roomsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🏠 الغرف</h3>
+            <button class="close-modal" data-close="roomsModal">&times;</button>
+        </div>
+        <div id="roomsList">جاري التحميل...</div>
+        <div class="sidebar-item" id="createRoomBtn" style="margin-top: 10px; text-align: center;">➕ إنشاء غرفة جديدة</div>
+    </div>
+</div>
+
+<!-- نافذة إنشاء غرفة -->
+<div id="createRoomModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>➕ إنشاء غرفة جديدة</h3>
+            <button class="close-modal" data-close="createRoomModal">&times;</button>
+        </div>
+        <input type="text" id="newRoomName" placeholder="اسم الغرفة (بالإنجليزية)" class="message-input" style="width: 100%; margin: 10px 0; padding: 10px;">
+        <input type="text" id="newRoomDisplayName" placeholder="الاسم المعروض" class="message-input" style="width: 100%; margin: 10px 0; padding: 10px;">
+        <textarea id="newRoomDesc" placeholder="وصف الغرفة" class="message-input" style="width: 100%; margin: 10px 0; padding: 10px;"></textarea>
+        <input type="password" id="newRoomPass" placeholder="كلمة المرور (اختياري)" class="message-input" style="width: 100%; margin: 10px 0; padding: 10px;">
+        <button class="btn btn-primary" onclick="createRoom()">إنشاء</button>
+    </div>
+</div>
+
+<!-- نافذة المتواجدين -->
+<div id="membersModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>👥 المتواجدون في الغرفة</h3>
+            <button class="close-modal" data-close="membersModal">&times;</button>
+        </div>
+        <div id="membersList" class="users-list">جاري التحميل...</div>
+    </div>
+</div>
+
+<!-- نافذة المتجر -->
+<div id="shopModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🛒 المتجر</h3>
+            <button class="close-modal" data-close="shopModal">&times;</button>
+        </div>
+        <div id="shopItems">جاري التحميل...</div>
+        <div style="margin-top: 15px;">
+            <div class="system-msg">🪙 رصيدك: <span id="shopGold">0</span> ذهب | 💎 <span id="shopGems">0</span> جواهر</div>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة إرسال هدية -->
+<div id="sendGiftModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🎁 إرسال هدية</h3>
+            <button class="close-modal" data-close="sendGiftModal">&times;</button>
+        </div>
+        <div id="sendGiftContent"></div>
+        <input type="text" id="giftMessage" placeholder="رسالتك مع الهدية" class="message-input" style="width: 100%; margin: 10px 0; padding: 10px;">
+        <button class="btn btn-primary" id="confirmSendGiftBtn">إرسال</button>
+    </div>
+</div>
+
+<!-- نافذة الأخبار -->
+<div id="newsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📰 الأخبار</h3>
+            <button class="close-modal" data-close="newsModal">&times;</button>
+        </div>
+        <div id="newsList">جاري التحميل...</div>
+    </div>
+</div>
+
+<!-- نافذة الأثرياء (جواهر) -->
+<div id="richModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>💎 الأثرياء (جواهر)</h3>
+            <button class="close-modal" data-close="richModal">&times;</button>
+        </div>
+        <div id="richListGems">جاري التحميل...</div>
+    </div>
+</div>
+
+<!-- نافذة تفاعل الأعضاء -->
+<div id="membersInteractionModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>👥 تفاعل الأعضاء</h3>
+            <button class="close-modal" data-close="membersInteractionModal">&times;</button>
+        </div>
+        <div id="membersInteraction">جاري التحميل...</div>
+    </div>
+</div>
+
+<!-- نافذة تفاعل الرومات -->
+<div id="roomsInteractionModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🚪 تفاعل الرومات</h3>
+            <button class="close-modal" data-close="roomsInteractionModal">&times;</button>
+        </div>
+        <div id="roomsInteraction">جاري التحميل...</div>
+    </div>
+</div>
+
+<!-- نافذة نقاط المسابقات -->
+<div id="contestPointsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🏆 نقاط المسابقات</h3>
+            <button class="close-modal" data-close="contestPointsModal">&times;</button>
+        </div>
+        <div id="contestPoints">جاري التحميل...</div>
+    </div>
+</div>
+
+<!-- نافذة المسابقة -->
+<div id="contestModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>🎮 المسابقة اليومية</h3>
+            <button class="close-modal" data-close="contestModal">&times;</button>
+        </div>
+        <div id="contestContent">
+            <div class="contest-question">
+                <div id="contestQuestion">جاري تحميل السؤال...</div>
+                <div class="contest-answer">
+                    <input type="text" id="contestAnswer" placeholder="أدخل إجابتك">
+                    <button class="btn btn-primary" onclick="submitContestAnswer()">إجابة</button>
+                </div>
+            </div>
+        </div>
+        <div id="contestResult" style="margin-top: 10px;"></div>
+    </div>
+</div>
+
+<!-- نافذة الراديو -->
+<div id="radioModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>📻 الراديو</h3>
+            <button class="close-modal" data-close="radioModal">&times;</button>
+        </div>
+        <audio id="radioPlayer" controls style="width: 100%; border-radius: 30px;">
+            <source src="https://radio.net/s/arabicmix" type="audio/mpeg">
+        </audio>
+        <div style="margin-top: 10px; text-align: center;">
+            <button class="input-icon" onclick="changeRadioStation('https://radio.net/s/bbc_arabic')">🔴 BBC</button>
+            <button class="input-icon" onclick="changeRadioStation('https://radio.net/s/mbc_fm')">🎵 MBC FM</button>
+            <button class="input-icon" onclick="changeRadioStation('https://radio.net/s/nogoum_fm')">⭐ نجوم FM</button>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة الإعدادات -->
+<div id="settingsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>⚙️ الإعدادات</h3>
+            <button class="close-modal" data-close="settingsModal">&times;</button>
+        </div>
+        
+        <div class="settings-section">
+            <h4>👤 حساب</h4>
+            <div class="sidebar-item" data-modal="editProfileModal">✏️ تحرير الملف الشخصي</div>
+            <div class="sidebar-item" data-modal="accountSettingsModal">🎨 إعدادات إضافية</div>
+        </div>
+        
+        <div class="settings-section">
+            <h4>🔒 الخصوصية</h4>
+            <div class="toggle-switch">
+                <span>🙈 إخفاء عمري</span>
+                <div class="toggle-input" id="privacyHideAge"></div>
+            </div>
+            <div class="toggle-switch">
+                <span>🙊 إخفاء موقعي</span>
+                <div class="toggle-input" id="privacyHideLocation"></div>
+            </div>
+            <div class="toggle-switch">
+                <span>🔇 تعطيل الرسائل الخاصة</span>
+                <div class="toggle-input" id="privacyDisablePrivate"></div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h4>🔊 الأصوات</h4>
+            <div class="toggle-switch">
+                <span>صوت العام</span>
+                <div class="toggle-input" id="soundPublic"></div>
+            </div>
+            <div class="toggle-switch">
+                <span>صوت الخاص</span>
+                <div class="toggle-input" id="soundPrivate"></div>
+            </div>
+            <div class="toggle-switch">
+                <span>صوت الضغط على الاسم</span>
+                <div class="toggle-input" id="soundClick"></div>
+            </div>
+        </div>
+        
+        <div class="settings-section">
+            <h4>🎨 المظهر</h4>
+            <div class="sidebar-item" id="changeThemeBtn">🌙 تغيير الثيم</div>
+            <div class="sidebar-item" id="changeFontBtn">✒️ تغيير الخط</div>
+        </div>
+        
+        <div class="settings-section">
+            <h4>🧩 الإضافات</h4>
+            <div id="addonsList">جاري التحميل...</div>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة إعدادات الحساب الإضافية -->
+<div id="accountSettingsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>👤 إعدادات الحساب</h3>
+            <button class="close-modal" data-close="accountSettingsModal">&times;</button>
+        </div>
+        <div class="sidebar-item" onclick="changePassword()">🔑 تغيير كلمة المرور</div>
+        <div class="sidebar-item" style="color: var(--danger);" id="deleteAccountBtn">🗑️ حذف الحساب</div>
+    </div>
+</div>
+
+<!-- نافذة يوتيوب -->
+<div id="youtubeModal" class="modal">
+    <div class="modal-content youtube-modal">
+        <div class="modal-header">
+            <h3>▶️ بحث يوتيوب</h3>
+            <button class="close-modal" data-close="youtubeModal">&times;</button>
+        </div>
+        <div class="youtube-search">
+            <input type="text" id="youtubeSearchInput" placeholder="ابحث عن فيديو...">
+            <button class="input-icon" onclick="searchYouTube()" style="background: red;">🔍</button>
+        </div>
+        <div class="youtube-results" id="youtubeResults"></div>
+        <div class="video-player" id="videoPlayer">
+            <iframe id="youtubeIframe" frameborder="0" allowfullscreen></iframe>
+            <button class="btn btn-guest" onclick="closeVideoPlayer()" style="margin-top: 10px;">إغلاق الفيديو</button>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة رفع الصور -->
+<div id="imagePreviewModal" class="modal">
+    <div class="modal-content" style="text-align: center;">
+        <div class="modal-header">
+            <h3>🖼️ معاينة الصورة</h3>
+            <button class="close-modal" data-close="imagePreviewModal">&times;</button>
+        </div>
+        <img id="previewImage" src="" style="max-width: 100%; border-radius: 15px; margin: 10px 0;">
+        <button class="btn btn-primary" id="sendImageBtn">📨 إرسال الصورة</button>
+    </div>
+</div>
+
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+    // ========== المتغيرات العامة ==========
+    let socket = null;
+    let currentRoom = 'main';
+    let currentUser = null;
+    let typingTimeout = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let currentGiftTarget = null;
+    let currentPrivateChatTarget = null;
+    let pendingImage = null;
+    
+    // ========== تهيئة Socket.IO ==========
+    function initSocket() {
+        socket = io();
+        
+        socket.on('connect', () => {
+            console.log('✅ متصل بالخادم');
+            joinRoom(currentRoom);
+        });
+        
+        socket.on('new_message', (data) => {
+            addMessageToChat(data.username, data.message, data.time, data.user_role, data.name_color);
+            playSound('public');
+        });
+        
+        socket.on('user_joined', (data) => {
+            addSystemMessage(data.message);
+            playSound('public');
+        });
+        
+        socket.on('user_left', (data) => {
+            addSystemMessage(data.message);
+        });
+        
+        socket.on('user_typing', (data) => {
+            if (data.is_typing) {
+                showTypingIndicator(data.username);
+            } else {
+                hideTypingIndicator();
+            }
+        });
+        
+        socket.on('private_message_received', (data) => {
+            addPrivateNotification(data.from, data.message);
+            playSound('private');
+        });
+        
+        socket.on('gold_update', (data) => {
+            updateWalletDisplay();
+        });
+        
+        socket.on('gems_update', (data) => {
+            updateWalletDisplay();
+        });
+        
+        socket.on('new_notification', (data) => {
+            showToast(data.title, data.content);
+            loadNotifications();
+        });
+        
+        socket.on('rank_updated', (data) => {
+            showToast('🎖️ ترقية', `تمت ترقيتك إلى رتبة ${data.new_role}`);
+            loadUserStats();
+        });
+        
+        socket.on('system_message', (data) => {
+            addSystemMessage(data.message);
+        });
+        
+        socket.on('error', (data) => {
+            showToast('❌ خطأ', data.message);
+        });
+    }
+    
+    // ========== دوال الدردشة ==========
+    function joinRoom(roomName) {
+        if (socket) {
+            socket.emit('leave', { room: currentRoom });
+            socket.emit('join', { room: roomName });
+            currentRoom = roomName;
+            document.getElementById('messagesContainer').innerHTML = '<div class="system-msg">✨ جاري تحميل المحادثة... ✨</div>';
+            loadRoomMessages(roomName);
+        }
+    }
+    
+    function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+        if (message) {
+            socket.emit('send_message', { room: currentRoom, message: message });
+            input.value = '';
+            hideTypingIndicator();
+        }
+    }
+    
+    function sendPrivateMessage(toUsername, message) {
+        socket.emit('private_message', { to: toUsername, message: message });
+    }
+    
+    function sendTyping() {
+        socket.emit('typing', { room: currentRoom, is_typing: true });
+        if (typingTimeout) clearTimeout(typingTimeout);
+        typingTimeout = setTimeout(() => {
+            socket.emit('typing', { room: currentRoom, is_typing: false });
+        }, 1000);
+    }
+    
+    function addMessageToChat(username, message, time, role, nameColor) {
+        const container = document.getElementById('messagesContainer');
+        const isOwn = username === currentUser?.username;
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isOwn ? 'own' : ''}`;
+        messageDiv.innerHTML = `
+            <div class="message-avatar">${getRoleIcon(role)}</div>
+            <div class="bubble">
+                <div class="message-name" style="color: ${nameColor || '#fff'}">${escapeHtml(username)}</div>
+                <div class="message-text">${formatMessage(message)}</div>
+                <div class="message-time">${time}</div>
+            </div>
+        `;
+        container.appendChild(messageDiv);
+        scrollToBottom();
+    }
+    
+    function addSystemMessage(message) {
+        const container = document.getElementById('messagesContainer');
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'system-msg';
+        msgDiv.innerHTML = message;
+        container.appendChild(msgDiv);
+        scrollToBottom();
+    }
+    
+    function addPrivateNotification(from, message) {
+        showToast(`📨 رسالة خاصة من ${from}`, message.substring(0, 50));
+    }
+    
+    function formatMessage(text) {
+        // تحويل الروابط
+        text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" style="color: #7eb311;">$1</a>');
+        // تحويل اليوتيوب تلقائياً
+        text = text.replace(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([^\s&]+)/g, 
+            '<a href="#" onclick="playYouTubeVideo(\'$1\'); return false;" style="color: #ff0000;">▶️ تشغيل الفيديو</a>');
+        return text;
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    function scrollToBottom() {
+        const container = document.getElementById('messagesContainer');
+        container.scrollTop = container.scrollHeight;
+    }
+    
+    function getRoleIcon(role) {
+        const icons = {
+            'owner': '👑',
+            'super_admin': '⭐',
+            'admin': '🛡️',
+            'host': '🎯',
+            'premium': '💎',
+            'member_100': '🌟',
+            'member_50': '✨',
+            'member_25': '⭐',
+            'member_10': '🔹',
+            'member_1': '🔸',
+            'visitor': '👤'
+        };
+        return icons[role] || '👤';
+    }
+    
+    // ========== دوال الصوت ==========
+    function playSound(type) {
+        // سيتم تفعيل بناءً على إعدادات المستخدم
+        const settings = JSON.parse(localStorage.getItem('soundSettings') || '{}');
+        if (type === 'public' && settings.soundPublic === false) return;
+        if (type === 'private' && settings.soundPrivate === false) return;
+        
+        const audio = new Audio();
+        if (type === 'public') audio.src = 'https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3';
+        if (type === 'private') audio.src = 'https://www.soundjay.com/misc/sounds/message-received-1.mp3';
+        audio.volume = 0.3;
+        audio.play().catch(e => console.log('صوت محظور'));
+    }
+    
+    // ========== التسجيل الصوتي ==========
+    async function startVoiceRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+            };
+            
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'voice.webm');
+                formData.append('room', currentRoom);
+                
+                const response = await fetch('/api/send-voice', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    addSystemMessage('🎙️ تم إرسال رسالة صوتية');
+                }
+                stream.getTracks().forEach(track => track.stop());
+                document.getElementById('voiceRecording').style.display = 'none';
+            };
+            
+            mediaRecorder.start();
+            document.getElementById('voiceRecording').style.display = 'flex';
+        } catch (err) {
+            showToast('❌ خطأ', 'لا يمكن الوصول إلى الميكروفون');
+        }
+    }
+    
+    function stopVoiceRecording() {
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+        }
+    }
+    
+    // ========== دوال العملات ==========
+    async function updateWalletDisplay() {
+        const response = await fetch('/api/user/stats');
+        if (response.ok) {
+            const data = await response.json();
+            document.getElementById('walletGold').innerText = data.gold;
+            document.getElementById('walletGems').innerText = data.gems;
+            document.getElementById('shopGold').innerText = data.gold;
+            document.getElementById('shopGems').innerText = data.gems;
+        }
+    }
+    
+    // إضافة الذهب التلقائي كل دقيقة
+    setInterval(async () => {
+        await fetch('/api/gold/auto', { method: 'POST' });
+    }, 60000);
+    
+    // إضافة الجواهر التلقائي كل نصف ساعة
+    setInterval(async () => {
+        await fetch('/api/gems/auto', { method: 'POST' });
+    }, 1800000);
+    
+    // ========== دوال المسابقات ==========
+    async function loadContest() {
+        const response = await fetch('/api/contest/active');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.question) {
+                document.getElementById('contestQuestion').innerHTML = data.question;
+                if (data.hint) {
+                    document.getElementById('contestQuestion').innerHTML += `<div class="system-msg" style="margin-top: 10px;">💡 تلميح: ${data.hint}</div>`;
+                }
+            } else {
+                document.getElementById('contestQuestion').innerHTML = 'لا توجد مسابقة نشطة حالياً';
+            }
+        }
+    }
+    
+    async function submitContestAnswer() {
+        const answer = document.getElementById('contestAnswer').value.trim();
+        if (!answer) return;
+        
+        const response = await fetch('/api/contest/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ answer: answer })
+        });
+        const data = await response.json();
+        
+        if (data.correct) {
+            document.getElementById('contestResult').innerHTML = '<div class="system-msg" style="color: #7eb311;">✅ إجابة صحيحة! +' + data.reward + ' ذهب</div>';
+            updateWalletDisplay();
+        } else {
+            document.getElementById('contestResult').innerHTML = '<div class="system-msg" style="color: #dc2626;">❌ إجابة خاطئة، حاول مرة أخرى</div>';
+        }
+        document.getElementById('contestAnswer').value = '';
+        setTimeout(() => {
+            document.getElementById('contestResult').innerHTML = '';
+        }, 3000);
+    }
+    
+    // ========== دوال إضافية ==========
+    function showToast(title, message) {
+        const toast = document.createElement('div');
+        toast.className = 'toast-notification';
+        toast.innerHTML = `<strong>${title}</strong><br><small>${message}</small>`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+    
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.add('show');
+    }
+    
+    function closeAllModals() {
+        document.querySelectorAll('.modal').forEach(m => m.classList.remove('show'));
+    }
+    
+    // ========== تحميل البيانات ==========
+    async function loadUserStats() {
+        const response = await fetch('/api/user/stats');
+        if (response.ok) {
+            currentUser = await response.json();
+            document.getElementById('profileEmoji').innerHTML = currentUser.profile_picture || '👤';
+            // تحديث الإعدادات المحفوظة
+            if (currentUser.name_color) {
+                document.documentElement.style.setProperty('--primary', currentUser.name_color);
+            }
+        }
+    }
+    
+    async function loadOnlineUsers() {
+        const response = await fetch('/api/online-users');
+        if (response.ok) {
+            const users = await response.json();
+            const container = document.getElementById('membersList');
+            if (container) {
+                container.innerHTML = users.map(user => `
+                    <div class="user-item" onclick="openUserMenu(${user.id}, '${user.username}')">
+                        <div class="user-status"></div>
+                        <div style="flex: 1;">${escapeHtml(user.username)}</div>
+                        <div>${getRoleIcon(user.role)}</div>
+                    </div>
+                `).join('');
+            }
+        }
+    }
+    
+    async function loadRooms() {
+        const response = await fetch('/api/rooms');
+        if (response.ok) {
+            const rooms = await response.json();
+            const container = document.getElementById('roomsList');
+            if (container) {
+                container.innerHTML = rooms.map(room => `
+                    <div class="sidebar-item" onclick="changeRoom('${room.name}')">
+                        ${room.icon} ${room.display_name}
+                        <span style="margin-right: auto; font-size: 12px;">👥 ${room.users_count}</span>
+                    </div>
+                `).join('');
+            }
+        }
+    }
+    
+    async function loadShop() {
+        const response = await fetch('/api/gifts');
+        if (response.ok) {
+            const gifts = await response.json();
+            const container = document.getElementById('shopItems');
+            if (container) {
+                container.innerHTML = gifts.map(gift => `
+                    <div class="sidebar-item" onclick="buyGift(${gift.id}, '${gift.name}', ${gift.price_gold}, ${gift.price_gems})">
+                        ${gift.icon} ${gift.name} - ${gift.price_gold}🪙 / ${gift.price_gems}💎
+                    </div>
+                `).join('');
+            }
+        }
+    }
+    
+    async function loadNotifications() {
+        const response = await fetch('/api/notifications');
+        if (response.ok) {
+            const notifs = await response.json();
+            const container = document.getElementById('notificationsList');
+            if (container) {
+                container.innerHTML = notifs.map(n => `
+                    <div class="sidebar-item" style="${n.is_read ? 'opacity: 0.6;' : ''}">
+                        <strong>${escapeHtml(n.title)}</strong><br>
+                        <small>${escapeHtml(n.content)}</small><br>
+                        <small style="color: #888;">${new Date(n.created_at).toLocaleString()}</small>
+                    </div>
+                `).join('');
+            }
+        }
+    }
+    
+    // ========== دوال الصداقات والهدايا ==========
+    async function sendGift(userId, giftId, goldAmount, gemsAmount) {
+        const response = await fetch('/api/send-gift', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ to_user_id: userId, gift_id: giftId, gold_amount: goldAmount, gems_amount: gemsAmount, message: document.getElementById('giftMessage').value })
+        });
+        const data = await response.json();
+        if (data.success) {
+            showToast('🎁 هدية', 'تم إرسال الهدية بنجاح');
+            updateWalletDisplay();
+            closeAllModals();
+        } else {
+            showToast('❌ خطأ', data.error);
+        }
+    }
+    
+    // ========== رفع الصور ==========
+    document.getElementById('attachBtn')?.addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    pendingImage = event.target.result;
+                    document.getElementById('previewImage').src = pendingImage;
+                    openModal('imagePreviewModal');
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        input.click();
+    });
+    
+    document.getElementById('sendImageBtn')?.addEventListener('click', async () => {
+        if (pendingImage) {
+            socket.emit('send_message', { room: currentRoom, message: pendingImage, type: 'image' });
+            closeAllModals();
+            pendingImage = null;
+        }
+    });
+    
+    // ========== يوتيوب ==========
+    async function searchYouTube() {
+        const query = document.getElementById('youtubeSearchInput').value;
+        if (!query) return;
+        
+        // API مجاني للبحث (بدون مفتاح - استخدام خدمة بديلة)
+        const response = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=10&q=${encodeURIComponent(query)}&key=YOUR_API_KEY`);
+        if (response.ok) {
+            const data = await response.json();
+            const container = document.getElementById('youtubeResults');
+            container.innerHTML = data.items.map(item => `
+                <div class="youtube-video" onclick="playYouTubeVideo('${item.id.videoId}')">
+                    <img src="${item.snippet.thumbnails.medium.url}">
+                    <div class="youtube-video-info">
+                        <h4>${escapeHtml(item.snippet.title)}</h4>
+                        <p>${escapeHtml(item.snippet.channelTitle)}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+    
+    function playYouTubeVideo(videoId) {
+        const player = document.getElementById('videoPlayer');
+        const iframe = document.getElementById('youtubeIframe');
+        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+        player.style.display = 'block';
+        document.getElementById('youtubeResults').style.display = 'none';
+    }
+    
+    function closeVideoPlayer() {
+        document.getElementById('videoPlayer').style.display = 'none';
+        document.getElementById('youtubeIframe').src = '';
+        document.getElementById('youtubeResults').style.display = 'block';
+    }
+    
+    // ========== التسجيل والخروج ==========
+    async function logout() {
+        await fetch('/api/logout', { method: 'POST' });
+        window.location.href = '/';
+    }
+    
+    // ========== التهيئة عند تحميل الصفحة ==========
+    document.addEventListener('DOMContentLoaded', async () => {
+        initSocket();
+        await loadUserStats();
+        updateWalletDisplay();
+        loadOnlineUsers();
+        loadRooms();
+        loadShop();
+        loadNotifications();
+        loadContest();
+        
+        // أحداث الأزرار
+        document.getElementById('sendBtn')?.addEventListener('click', sendMessage);
+        document.getElementById('messageInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+            else sendTyping();
+        });
+        document.getElementById('voiceBtn')?.addEventListener('click', startVoiceRecording);
+        document.getElementById('stopRecordingBtn')?.addEventListener('click', stopVoiceRecording);
+        document.getElementById('logoutBtn')?.addEventListener('click', logout);
+        document.getElementById('refreshPageBtn')?.addEventListener('click', () => location.reload());
+        document.getElementById('youtubeBtn')?.addEventListener('click', () => openModal('youtubeModal'));
+        document.getElementById('menuBtn')?.addEventListener('click', () => document.getElementById('sidebar').classList.add('open'));
+        document.getElementById('closeSidebar')?.addEventListener('click', () => document.getElementById('sidebar').classList.remove('open'));
+        document.getElementById('settingsBtn')?.addEventListener('click', () => openModal('settingsModal'));
+        document.getElementById('diamondBtn')?.addEventListener('click', () => openModal('diamondModal'));
+        document.getElementById('notifBtn')?.addEventListener('click', () => openModal('notifModal'));
+        document.getElementById('profileBtn')?.addEventListener('click', () => openModal('profileModal'));
+        
+        // إغلاق النوافذ
+        document.querySelectorAll('.close-modal, [data-close]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const modalId = btn.getAttribute('data-close');
+                if (modalId) document.getElementById(modalId)?.classList.remove('show');
+                else btn.closest('.modal')?.classList.remove('show');
+            });
+        });
+        
+        document.querySelectorAll('[data-modal]').forEach(el => {
+            el.addEventListener('click', () => {
+                const modalId = el.getAttribute('data-modal');
+                if (modalId) openModal(modalId);
+            });
+        });
+        
+        // تحديث كل 5 ثواني قائمة المتواجدين
+        setInterval(loadOnlineUsers, 5000);
+        
+        // منع الإغلاق العرضي
+        window.onclick = (e) => {
+            if (e.target.classList.contains('modal')) {
+                e.target.classList.remove('show');
+            }
+        };
+    });
+    
+    function changeRoom(roomName) {
+        joinRoom(roomName);
+        closeAllModals();
+        document.getElementById('sidebar')?.classList.remove('open');
+    }
+    
+    function saveProfile() {
+        // حفظ الملف الشخصي
+        showToast('✅ تم الحفظ', 'تم تحديث الملف الشخصي');
+        closeAllModals();
+    }
+    
+    function playYouTubeVideoFromId(videoId) {
+        const playerContainer = document.createElement('div');
+        playerContainer.style.cssText = 'position: fixed; bottom: 100px; right: 20px; width: 300px; background: #000; border-radius: 15px; z-index: 2000;';
+        playerContainer.innerHTML = `
+            <iframe width="100%" height="180" src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allowfullscreen></iframe>
+            <button style="position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; border-radius: 50%; width: 25px; height: 25px; cursor: pointer;" onclick="this.parentElement.remove()">✕</button>
+        `;
+        document.body.appendChild(playerContainer);
+    }
+    
+    function changeRadioStation(url) {
+        document.getElementById('radioPlayer').src = url;
+        document.getElementById('radioPlayer').play();
+    }
+    
+    function showTypingIndicator(username) {
+        const indicator = document.getElementById('typingIndicator');
+        indicator.style.display = 'flex';
+        indicator.querySelector('span:first-child').innerHTML = `${escapeHtml(username)} يكتب...`;
+        setTimeout(() => hideTypingIndicator(), 3000);
+    }
+    
+    function hideTypingIndicator() {
+        document.getElementById('typingIndicator').style.display = 'none';
+    }
+</script>
+</body>
+</html>
