@@ -1,20 +1,9 @@
-import os
-import sqlite3
-import hashlib
-import secrets
-import time
-import re
-import json
-import threading
-import random
-from datetime import datetime, timedelta
-from flask import Flask, render_template, request, jsonify, session, redirect, url_for, g
-from flask_socketio import SocketIO, emit, join_room, leave_room
-from flask_bcrypt import Bcrypt
-from functools import wraps
-import base64
-import requests
+# Comment out the old eventlet import
+# import eventlet
+# من eventlet استيراد sleep للوظائف الخلفية
 
+# استيراد الوقت بدلاً من eventlet للوظائف غير المتزامنة
+import time
 # ============================================================
 # الإعدادات الأساسية
 # ============================================================
@@ -291,4 +280,5 @@ if __name__ == '__main__':
     ║  🔑 كلمة المرور: Admin@123                               ║
     ╚══════════════════════════════════════════════════════════╝
     """)
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True, use_reloader=False)
+if __name__ == '__main__':
+    socketio.run(app, host='0.0.0.0', port=10000, debug=False)
